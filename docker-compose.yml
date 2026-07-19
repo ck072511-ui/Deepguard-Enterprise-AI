@@ -1,0 +1,194 @@
+# ============================================================
+# DeepGuard — docker-compose.yml
+# Multi-service orchestration for local development and staging
+# ============================================================
+
+version: "3.9"
+
+# ── Shared Networks ───────────────────────────────────────
+networks:
+  deepguard-network:
+    driver: bridge
+    name: deepguard-network
+
+# ── Shared Volumes ────────────────────────────────────────
+volumes:
+  deepguard-db:
+    name: deepguard-db
+  deepguard-weights:
+    name: deepguard-weights
+  deepguard-mlflow-db:
+    name: deepguard-mlflow-db
+  deepguard-mlflow-artifacts:
+    name: deepguard-mlflow-artifacts
+  deepguard-logs:
+    name: deepguard-logs
+  deepguard-uploads:
+    name: deepguard-uploads
+
+# ── Services ──────────────────────────────────────────────
+services:
+
+  # ── FastAPI Backend ─────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: deepguard-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - APP_ENV=${APP_ENV:-development}
+      - DATABASE_URL=sqlite+aiosqlite:////app/database/deepguard.db
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - LOG_DIR=/app/logs
+      - UPLOAD_DIR=/app/uploads
+      - MODEL_WEIGHTS_PATH=/app/weights/best_model.pt
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - deepguard-db:/app/database
+      - deepguard-weights:/app/weights
+      - deepguard-logs:/app/logs
+      - deepguard-uploads:/app/uploads
+      - ./configs:/app/configs:ro
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    networks:
+      - deepguard-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+        reservations:
+          memory: 1G
+          cpus: "0.5"
+
+  # ── API Dev Mode (with hot reload) ──────────────────────
+  api-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: deepguard-api-dev
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - APP_ENV=development
+      - DEBUG=true
+      - DATABASE_URL=sqlite+aiosqlite:////app/database/deepguard.db
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    ports:
+      - "8001:8000"
+    volumes:
+      - .:/app
+      - deepguard-db:/app/database
+      - deepguard-weights:/app/weights
+      - deepguard-logs:/app/logs
+    command: >
+      uvicorn backend.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
+      --log-level debug
+    networks:
+      - deepguard-network
+    profiles:
+      - dev
+
+  # ── MLflow Tracking Server ──────────────────────────────
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.15.1
+    container_name: deepguard-mlflow
+    restart: unless-stopped
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=sqlite:////mlflow/mlflow.db
+      - MLFLOW_ARTIFACT_ROOT=/mlflow/artifacts
+    ports:
+      - "5000:5000"
+    volumes:
+      - deepguard-mlflow-db:/mlflow
+      - deepguard-mlflow-artifacts:/mlflow/artifacts
+    networks:
+      - deepguard-network
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0
+      --port 5000
+      --serve-artifacts
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ── Prometheus Monitoring ───────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.54.0
+    container_name: deepguard-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deployment/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - deepguard-network
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+    profiles:
+      - monitoring
+
+  # ── Grafana Dashboard ───────────────────────────────────
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: deepguard-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-deepguard123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./deployment/grafana/dashboards:/etc/grafana/dashboards:ro
+      - ./deployment/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - deepguard-network
+    profiles:
+      - monitoring
+
+  # ── Nginx Reverse Proxy ─────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: deepguard-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deployment/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deployment/nginx/ssl:/etc/nginx/ssl:ro
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+    networks:
+      - deepguard-network
+    profiles:
+      - production

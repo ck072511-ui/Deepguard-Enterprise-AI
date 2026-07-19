@@ -1,0 +1,35 @@
+# ============================================================
+# DeepGuard — configs/database_config.yaml
+# Database connection and session configuration
+# ============================================================
+
+database:
+  # ── Connection ──────────────────────────────────────────
+  url: sqlite+aiosqlite:///./database/deepguard.db
+  echo: false                          # Log all SQL statements
+  echo_pool: false                     # Log pool events
+
+  # ── Connection Pool ─────────────────────────────────────
+  pool:
+    size: 10
+    max_overflow: 20
+    timeout: 30                        # Seconds to wait for connection
+    recycle: 3600                      # Recycle connections after 1 hour
+    pre_ping: true                     # Validate connection before use
+
+  # ── Session ─────────────────────────────────────────────
+  session:
+    autocommit: false
+    autoflush: false
+    expire_on_commit: true
+
+  # ── Migrations (Alembic) ────────────────────────────────
+  migrations:
+    directory: ./database/migrations
+    version_table: alembic_version
+    script_location: ./database/migrations
+
+  # ── Health Check ────────────────────────────────────────
+  health:
+    ping_query: "SELECT 1"
+    timeout_seconds: 5

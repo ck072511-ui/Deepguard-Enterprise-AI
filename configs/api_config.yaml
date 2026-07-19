@@ -1,0 +1,131 @@
+# ============================================================
+# DeepGuard — configs/api_config.yaml
+# FastAPI server, middleware, and security configuration
+# ============================================================
+
+server:
+  host: 0.0.0.0
+  port: 8000
+  workers: 4
+  reload: false
+  log_level: info
+  access_log: true
+  timeout_keep_alive: 75
+  limit_max_requests: 10000
+
+app:
+  title: DeepGuard API
+  description: |
+    Production-ready Deepfake Detection System powered by Vision Transformers.
+    Detect manipulated/synthetic images and videos with state-of-the-art accuracy.
+  version: "1.0.0"
+  contact:
+    name: DeepGuard Team
+    email: deepguard@example.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  openapi_url: /openapi.json
+  docs_url: /docs
+  redoc_url: /redoc
+
+# ── API Routing ───────────────────────────────────────────
+routing:
+  prefix: /api/v1
+  include_in_schema: true
+
+# ── CORS ──────────────────────────────────────────────────
+cors:
+  allow_origins:
+    - http://localhost:3000
+    - http://localhost:8080
+    - http://127.0.0.1:3000
+  allow_credentials: true
+  allow_methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allow_headers:
+    - "*"
+  max_age: 3600
+
+# ── Rate Limiting ─────────────────────────────────────────
+rate_limiting:
+  enabled: true
+  requests_per_minute: 60
+  requests_per_hour: 1000
+  burst_multiplier: 2
+  strategy: sliding_window            # fixed_window | sliding_window | token_bucket
+
+# ── File Upload ───────────────────────────────────────────
+upload:
+  max_image_size_mb: 10
+  max_video_size_mb: 200
+  max_batch_size: 32
+  allowed_image_types:
+    - image/jpeg
+    - image/png
+    - image/webp
+    - image/bmp
+  allowed_video_types:
+    - video/mp4
+    - video/avi
+    - video/quicktime
+    - video/x-msvideo
+  upload_dir: ./uploads
+  cleanup_after_processing: true
+  temp_file_ttl_hours: 24
+
+# ── Security ──────────────────────────────────────────────
+security:
+  api_key_header: X-API-Key
+  api_key_length: 32
+  jwt:
+    algorithm: HS256
+    access_token_expire_minutes: 30
+    refresh_token_expire_days: 7
+  https_redirect: false               # Enable in production
+  hsts_max_age: 31536000
+
+# ── Trusted Hosts ─────────────────────────────────────────
+trusted_hosts:
+  - localhost
+  - 127.0.0.1
+  - "*.deepguard.io"
+
+# ── Response Compression ──────────────────────────────────
+compression:
+  enabled: true
+  min_size_bytes: 1024
+  level: 6                            # 1-9, higher = more compression
+
+# ── Monitoring ────────────────────────────────────────────
+monitoring:
+  prometheus:
+    enabled: true
+    endpoint: /metrics
+    include_in_schema: false
+  health:
+    endpoint: /api/v1/health
+    include_db_check: true
+    include_model_check: true
+    include_mlflow_check: true
+  request_id:
+    header_name: X-Request-ID
+    auto_generate: true
+
+# ── Pagination ────────────────────────────────────────────
+pagination:
+  default_page_size: 20
+  max_page_size: 100
+
+# ── Response Caching ──────────────────────────────────────
+caching:
+  enabled: true
+  ttl_seconds: 300
+  max_size_mb: 512
+  exclude_paths:
+    - /api/v1/health
+    - /metrics

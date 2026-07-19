@@ -1,0 +1,173 @@
+# ============================================================
+# DeepGuard — .gitignore
+# ============================================================
+
+# ── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+.eggs/
+*.egg-link
+
+# ── Virtual Environments ──────────────────────────────────
+.venv/
+venv/
+ENV/
+env/
+.env
+!.env.example
+
+# ── Distribution / Packaging ──────────────────────────────
+.Python
+wheels/
+share/python-wheels/
+MANIFEST
+
+# ── PyInstaller ───────────────────────────────────────────
+*.manifest
+*.spec
+
+# ── Testing ───────────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+*.cover
+*.py,cover
+.hypothesis/
+nosetests.xml
+test-results/
+junit*.xml
+
+# ── Type Checking ─────────────────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.pyre/
+
+# ── Linting ───────────────────────────────────────────────
+.ruff_cache/
+
+# ── Jupyter Notebooks ─────────────────────────────────────
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+*.ipynb_meta
+
+# ── ML / Training Artifacts ───────────────────────────────
+weights/*.pt
+weights/*.pth
+weights/*.onnx
+weights/*.bin
+weights/*.safetensors
+!weights/.gitkeep
+
+mlflow/mlruns/
+mlflow/mlartifacts/
+mlruns/
+mlartifacts/
+
+# ── Datasets ──────────────────────────────────────────────
+datasets/raw/
+datasets/processed/
+datasets/cache/
+datasets/**/*.mp4
+datasets/**/*.avi
+datasets/**/*.mov
+datasets/**/*.jpg
+datasets/**/*.jpeg
+datasets/**/*.png
+datasets/**/*.webp
+!datasets/.gitkeep
+
+# ── Logs ──────────────────────────────────────────────────
+logs/*.log
+logs/*.jsonl
+logs/**/*.log
+!logs/.gitkeep
+
+# ── Docker ────────────────────────────────────────────────
+.docker/
+
+# ── Database ──────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+database/*.db
+
+# ── OS Generated ──────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── IDE / Editor ──────────────────────────────────────────
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# ── Secrets / Credentials ─────────────────────────────────
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# ── Temporary Files ───────────────────────────────────────
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# ── Build Artifacts ───────────────────────────────────────
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.dll
+*.dylib
+
+# ── Pre-commit ────────────────────────────────────────────
+.pre-commit-config-local.yaml
+
+# ── Assets (large binaries) ───────────────────────────────
+assets/videos/
+assets/raw/
+!assets/.gitkeep
+
+# ── Node (frontend) ───────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.next/
+frontend/.nuxt/
+frontend/build/
+package-lock.json
+yarn.lock
+.pnpm-lock.yaml

@@ -1,0 +1,148 @@
+# ============================================================
+# DeepGuard — configs/training_config.yaml
+# Training loop, optimizer, scheduler, and augmentation settings
+# ============================================================
+
+training:
+  # ── General ─────────────────────────────────────────────
+  experiment_name: deepguard-vit-base
+  run_name: vit_base_patch16_224_ff++
+  seed: 42
+  deterministic: true
+  output_dir: ./weights
+  resume_from: null                    # Path to checkpoint to resume from
+
+  # ── Epochs & Steps ──────────────────────────────────────
+  epochs: 50
+  warmup_epochs: 5
+  eval_every_n_epochs: 1
+  save_every_n_epochs: 5
+  log_every_n_steps: 10
+
+  # ── Batch Configuration ─────────────────────────────────
+  batch_size: 32
+  eval_batch_size: 64
+  gradient_accumulation_steps: 1
+  num_workers: 4
+  pin_memory: true
+  prefetch_factor: 2
+  persistent_workers: true
+
+  # ── Mixed Precision ─────────────────────────────────────
+  use_amp: true                        # Automatic mixed precision
+  amp_dtype: float16                   # float16 | bfloat16
+
+  # ── Gradient Management ─────────────────────────────────
+  gradient_clip_norm: 1.0
+  gradient_clip_value: null
+
+# ── Optimizer ─────────────────────────────────────────────
+optimizer:
+  type: adamw                          # adamw | sgd | sam | lars
+  lr: 1.0e-4
+  weight_decay: 1.0e-4
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  amsgrad: false
+
+  # ── Layer-wise Learning Rate Decay ──────────────────────
+  layer_decay:
+    enabled: true
+    decay_factor: 0.75                 # Applied per layer from head to patch embed
+
+# ── Scheduler ─────────────────────────────────────────────
+scheduler:
+  type: cosine_with_warmup             # cosine_with_warmup | step | plateau | one_cycle
+  min_lr: 1.0e-6
+  warmup_steps: 500
+  cycle_mult: 1.0
+  t_max: null                         # Auto-computed if null
+
+# ── Loss Function ─────────────────────────────────────────
+loss:
+  type: cross_entropy                  # cross_entropy | focal | label_smoothing
+  label_smoothing: 0.1
+  class_weights: null                  # [real_weight, fake_weight] or null for auto
+  focal:
+    alpha: 0.25
+    gamma: 2.0
+
+# ── Early Stopping ────────────────────────────────────────
+early_stopping:
+  enabled: true
+  monitor: val/auc_roc
+  patience: 10
+  min_delta: 1.0e-4
+  mode: max                            # max | min
+  restore_best_weights: true
+
+# ── Checkpointing ─────────────────────────────────────────
+checkpointing:
+  save_top_k: 3                        # Keep top-k checkpoints
+  monitor: val/auc_roc
+  mode: max
+  save_last: true
+  filename_template: "epoch={epoch:03d}-auc={val/auc_roc:.4f}"
+
+# ── Augmentation ──────────────────────────────────────────
+augmentation:
+  train:
+    enabled: true
+    image_size: 224
+    random_resized_crop:
+      scale: [0.8, 1.0]
+      ratio: [0.75, 1.33]
+    horizontal_flip: 0.5
+    color_jitter:
+      brightness: 0.2
+      contrast: 0.2
+      saturation: 0.2
+      hue: 0.1
+      probability: 0.8
+    random_grayscale: 0.05
+    gaussian_blur:
+      blur_limit: [3, 7]
+      probability: 0.3
+    compression:                       # JPEG compression artifact simulation
+      quality_lower: 40
+      quality_upper: 95
+      probability: 0.5
+    coarse_dropout:
+      max_holes: 8
+      max_height: 32
+      max_width: 32
+      probability: 0.3
+    normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+
+  val:
+    enabled: true
+    image_size: 224
+    center_crop: true
+    normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+
+# ── Dataset Split ─────────────────────────────────────────
+dataset:
+  name: ff++                           # ff++ | dfdc | celeb-df | custom
+  root: ./datasets
+  train_split: 0.8
+  val_split: 0.1
+  test_split: 0.1
+  balance_classes: true               # Oversample minority class
+  max_frames_per_video: 30            # Max frames to extract per video
+  face_detection: true                # Run face detection before crop
+  face_margin: 0.3                    # Face bounding box margin
+
+# ── Logging & MLflow ──────────────────────────────────────
+mlflow:
+  enabled: true
+  experiment_name: deepguard-experiments
+  log_model: true                      # Log model artifact to MLflow
+  log_artifacts: true
+  tags:
+    model: vit_base_patch16_224
+    dataset: ff++
+    version: "1.0.0"
