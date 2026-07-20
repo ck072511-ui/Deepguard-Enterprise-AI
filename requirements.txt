@@ -11,7 +11,7 @@ timm>=1.0.9; python_version < "3.14"
 
 # ── Computer Vision & Image Processing ───────────────────
 opencv-python-headless>=4.10.0.84
-Pillow>=10.4.0
+Pillow>=10.2.0,<10.3.0
 albumentations>=1.4.13; python_version < "3.14"
 imageio>=2.35.1; python_version < "3.14"
 scikit-image>=0.24.0; python_version < "3.14"
