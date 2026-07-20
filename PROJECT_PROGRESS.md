@@ -95,7 +95,8 @@
   - Created `runtime.txt` specifying `python-3.11` to force Streamlit Community Cloud to build the project using a compatible Python 3.11 runtime (instead of defaulting to an incompatible Python version like 3.14).
   - Created `.python-version` specifying `3.11.9` for fallback environment versioning tool support.
   - Removed unused `dlib` dependency from `requirements.txt` to prevent compile-time build errors on Linux servers lacking CMake and C++ build chains.
-  - Added `python_version < "3.14"` markers to heavy ML/deep-learning packages (such as `torch`, `torchvision`, `torchaudio`, `timm`, `facenet-pytorch`, `onnxruntime`, `albumentations`, etc.) in `requirements.txt`. This prevents installing them on Python 3.14+ (Streamlit Cloud's runtime), resolving the dependency deadlock between `facenet-pytorch` and `torchvision` without affecting local Python 3.11 compatibility.
+  - Added `python_version < "3.14"` markers to heavy ML/deep-learning packages (such as `torch`, `torchvision`, `torchaudio`, `timm`, `facenet-pytorch`, `onnxruntime`, `albumentations`, etc.) in `requirements.txt`.
+  - Resolved `facenet-pytorch` (which requires `torchvision < 0.18.0`) dependency conflict by adjusting PyTorch to `>=2.2.2` and torchvision to `>=0.17.2,<0.18.0` in `requirements.txt`, and updated `.github/workflows/ci.yml` PyTorch install step to match.
   - Verified local build and run environment compatibility.
 
 ## Current Milestone
