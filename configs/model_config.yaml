@@ -5,7 +5,7 @@
 
 model:
   # ── Architecture ────────────────────────────────────────
-  name: vit_base_patch16_224          # timm model identifier
+  name: vit_tiny_patch16_224          # timm model identifier
   pretrained: true                     # Load ImageNet-21k weights
   num_classes: 2                       # [real, fake]
   input_size: 224                      # Input resolution (square)

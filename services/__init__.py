@@ -9,3 +9,7 @@ Services:
     services.training         — Model training orchestration service
     services.model_registry   — MLflow model registry service
 """
+
+from services.detection.service import DetectionService
+
+__all__ = ["DetectionService"]

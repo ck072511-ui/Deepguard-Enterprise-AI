@@ -1,2 +1,9 @@
-﻿# services.detection__init__.py
+"""
+DeepGuard — services/detection package.
+"""
+
+from services.detection.service import DetectionService
+
+__all__ = ["DetectionService"]
+
 

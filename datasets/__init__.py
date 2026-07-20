@@ -1,11 +1,23 @@
 """
-DeepGuard — Datasets package.
+DeepGuard — datasets/__init__.py
 
-Provides PyTorch Dataset classes, data loaders, preprocessing
-pipelines, and augmentation strategies for deepfake detection datasets.
-
-Packages:
-    datasets.loaders        — PyTorch Dataset and DataLoader factories
-    datasets.preprocessors  — Face detection, frame extraction, normalization
-    datasets.augmentations  — Albumentations augmentation pipelines
+Top-level public API for the datasets package.
+Provides the DatasetFactory as the primary entry point for consumers.
 """
+
+from datasets.downloader import DatasetDownloader
+from datasets.factory import DatasetFactory
+from datasets.splitter import StratifiedSplitter, SubjectAwareSplitter
+from datasets.statistics import DatasetStatistics
+from datasets.validator import DatasetValidator
+from datasets.versioning import DatasetVersioner
+
+__all__ = [
+    "DatasetFactory",
+    "DatasetDownloader",
+    "DatasetValidator",
+    "DatasetStatistics",
+    "DatasetVersioner",
+    "StratifiedSplitter",
+    "SubjectAwareSplitter",
+]

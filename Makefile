@@ -227,6 +227,10 @@ export-onnx:
 benchmark:
 	$(PYTHON) scripts/benchmark.py --checkpoint $(CHECKPOINT)
 
+## load-test: Run Locust load testing suite
+load-test:
+	locust -f tests/load/locustfile.py --host http://localhost:8000
+
 # ── Documentation ─────────────────────────────────────────
 ## docs-serve: Serve documentation locally
 docs-serve:

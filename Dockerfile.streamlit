@@ -1,0 +1,106 @@
+# ============================================================
+# DeepGuard — Dockerfile.streamlit
+# Multi-stage production Docker image for Streamlit Frontend
+# ============================================================
+
+# ── Stage 1: Builder ─────────────────────────────────────
+FROM python:3.11-slim AS builder
+
+LABEL maintainer="DeepGuard Team <deepguard@example.com>"
+LABEL description="DeepGuard Streamlit Frontend — Builder Stage"
+
+# Set environment variables for builder
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_DEFAULT_TIMEOUT=120
+
+# Install system build dependencies for OpenCV
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libopencv-dev \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip and install standard packages
+RUN pip install --upgrade pip wheel setuptools
+
+# Copy requirements and install
+WORKDIR /build
+COPY requirements.txt .
+
+# Install PyTorch CPU (lightweight for frontend and local routing)
+RUN pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 \
+    --index-url https://download.pytorch.org/whl/cpu
+
+# Install remaining requirements
+RUN pip install --no-deps -r requirements.txt || pip install -r requirements.txt
+
+# Explicitly install streamlit and watchdogs to ensure Streamlit operates correctly
+RUN pip install streamlit==1.37.1 watchdog==4.0.1
+
+
+# ── Stage 2: Production Runner ────────────────────────────
+FROM python:3.11-slim AS production
+
+LABEL maintainer="DeepGuard Team <deepguard@example.com>"
+LABEL description="DeepGuard Streamlit Frontend — Production Image"
+LABEL version="1.0.0"
+
+# Runtime environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    APP_ENV=production \
+    APP_HOME=/app
+
+# Install only runtime system dependencies for OpenCV and network tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libopencv-dev \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Create non-root user for security
+RUN groupadd --gid 1001 deepguard && \
+    useradd --uid 1001 --gid deepguard --shell /bin/bash --create-home deepguard
+
+# Set working directory
+WORKDIR $APP_HOME
+
+# Copy application source code
+COPY --chown=deepguard:deepguard . .
+
+# Switch to non-root user
+USER deepguard
+
+# Expose Streamlit port
+EXPOSE 8501
+
+# Health check targeting Streamlit's health endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+
+# Default command — run Streamlit frontend
+CMD ["streamlit", "run", "frontend/app.py", \
+     "--server.port=8501", \
+     "--server.address=0.0.0.0", \
+     "--server.headless=true", \
+     "--server.enableCORS=false", \
+     "--server.enableXsrfProtection=false"]

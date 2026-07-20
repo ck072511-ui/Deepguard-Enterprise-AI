@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeepGuard — Deepfake Detection System Presentation</title>
+  <style>
+    :root {
+      --bg: #0a0a1a;
+      --surface: #12122a;
+      --card: #1a1a35;
+      --accent: #6c63ff;
+      --accent2: #ff6b6b;
+      --accent3: #4ecdc4;
+      --text: #e8e8ff;
+      --muted: #8888aa;
+      --border: rgba(108,99,255,0.3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Slides Container ─────────────────────── */
+    .slides-wrapper {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem 4rem;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .slide.prev {
+      opacity: 0;
+      transform: translateX(-100%);
+    }
+
+    /* ── Nav Bar ─────────────────────────────── */
+    .nav-bar {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 2rem;
+      gap: 1rem;
+    }
+
+    .nav-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover { background: var(--accent); border-color: var(--accent); }
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .slide-counter {
+      font-size: 0.9rem;
+      color: var(--muted);
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 4px;
+      background: var(--card);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    /* ── Slide Content Styles ────────────────── */
+    .slide-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent3);
+      margin-bottom: 0.75rem;
+    }
+
+    h1 { font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.15; margin-bottom: 1rem; }
+    h2 { font-size: clamp(1.4rem, 3vw, 2.2rem); margin-bottom: 1.25rem; }
+    h3 { font-size: 1.1rem; color: var(--accent3); margin-bottom: 0.5rem; }
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: clamp(0.9rem, 2vw, 1.2rem);
+      color: var(--muted);
+      max-width: 700px;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* ── Grid Layouts ───────────────────────── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; max-width: 900px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; width: 100%; max-width: 960px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; width: 100%; max-width: 1000px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .card-accent { border-top: 3px solid var(--accent); }
+    .card-green  { border-top: 3px solid var(--accent3); }
+    .card-red    { border-top: 3px solid var(--accent2); }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label { font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; }
+
+    .badge {
+      display: inline-block;
+      background: rgba(108,99,255,0.2);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-size: 0.78rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      margin: 0.2rem;
+    }
+
+    .badge-green { background: rgba(78,205,196,0.15); border-color: rgba(78,205,196,0.4); color: var(--accent3); }
+    .badge-red   { background: rgba(255,107,107,0.15); border-color: rgba(255,107,107,0.4); color: var(--accent2); }
+
+    .bullet-list { list-style: none; text-align: left; width: 100%; max-width: 800px; }
+    .bullet-list li {
+      padding: 0.5rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+      color: var(--text);
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+    .bullet-list li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--accent3);
+    }
+
+    .pipeline-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1.25rem;
+      font-size: 0.85rem;
+      position: relative;
+    }
+
+    .pipeline-arrow {
+      color: var(--accent3);
+      font-size: 1.2rem;
+      align-self: center;
+    }
+
+    .pipeline-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .code-block {
+      background: #0d1117;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.85rem;
+      text-align: left;
+      width: 100%;
+      max-width: 700px;
+      color: #e6edf3;
+      line-height: 1.6;
+    }
+
+    .code-keyword { color: #ff7b72; }
+    .code-string  { color: #a5d6ff; }
+    .code-comment { color: #8b949e; }
+    .code-number  { color: #79c0ff; }
+
+    /* ── Slide-specific backgrounds ─────────── */
+    #slide-1 { background: radial-gradient(ellipse at 30% 50%, rgba(108,99,255,0.15), transparent 70%),
+                            radial-gradient(ellipse at 70% 50%, rgba(78,205,196,0.1), transparent 70%), var(--bg); }
+
+    #slide-title-2 { background: radial-gradient(ellipse at center, rgba(255,107,107,0.1), transparent 70%), var(--bg); }
+
+    .divider { width: 60px; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent3)); border-radius: 2px; margin: 1rem auto; }
+
+    .arch-block {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      text-align: center;
+      font-size: 0.82rem;
+    }
+
+    .arch-layer {
+      background: rgba(108,99,255,0.15);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.5rem 1.5rem;
+      margin: 0.3rem 0;
+      text-align: center;
+      font-size: 0.85rem;
+      width: 100%;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th { background: rgba(108,99,255,0.3); color: var(--accent3); padding: 0.6rem 1rem; text-align: left; }
+    td { padding: 0.55rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    tr:hover td { background: rgba(108,99,255,0.07); }
+
+    .checkmark { color: var(--accent3); font-weight: bold; }
+    .content-col { text-align: center; }
+  </style>
+</head>
+<body>
+
+<div class="slides-wrapper">
+
+  <!-- ── Slide 1: Title ───────────────────────────────── -->
+  <section class="slide active" id="slide-1">
+    <div class="slide-tag">Final Project Presentation · 2026</div>
+    <h1 class="gradient-text" style="text-align:center; font-size: clamp(2rem,5vw,3.5rem);">🔍 DeepGuard</h1>
+    <h2 style="text-align:center; color: var(--muted); font-weight: 400; font-size:1.3rem; margin-bottom: 1.5rem;">
+      Deepfake Detection using Vision Transformers
+    </h2>
+    <div class="divider"></div>
+    <p class="subtitle">
+      A production-ready AI system for detecting AI-generated synthetic media,
+      powered by Vision Transformers, Explainable AI, and a full MLOps stack.
+    </p>
+    <div style="display:flex; gap:0.5rem; margin-top:2rem; flex-wrap:wrap; justify-content:center;">
+      <span class="badge">Python 3.11</span>
+      <span class="badge">PyTorch 2.x</span>
+      <span class="badge">Vision Transformer</span>
+      <span class="badge">FastAPI</span>
+      <span class="badge">ONNX Runtime</span>
+      <span class="badge-green badge">Docker</span>
+      <span class="badge-green badge">CI/CD</span>
+      <span class="badge-green badge">187 Tests ✓</span>
+    </div>
+  </section>
+
+  <!-- ── Slide 2: Problem ─────────────────────────────── -->
+  <section class="slide" id="slide-title-2">
+    <div class="slide-tag">01 · Problem Statement</div>
+    <h2 style="text-align:center; margin-bottom:1.5rem;">The Deepfake Threat</h2>
+    <div class="grid-3" style="max-width:900px;">
+      <div class="card card-red">
+        <div style="font-size:2rem; margin-bottom:0.5rem;">🎭</div>
+        <h3>Political Manipulation</h3>
+        <p style="font-size:0.85rem; color:var(--muted);">Synthetic videos of political figures spreading misinformation</p>
+      </div>
+      <div class="card card-red">
+        <div style="font-size:2rem; margin-bottom:0.5rem;">💸</div>
+        <h3>Financial Fraud</h3>
+        <p style="font-size:0.85rem; color:var(--muted);">Identity impersonation in video KYC and authentication systems</p>
+      </div>
+      <div class="card card-red">
+        <div style="font-size:2rem; margin-bottom:0.5rem;">🔒</div>
+        <h3>Privacy Violations</h3>
+        <p style="font-size:0.85rem; color:var(--muted);">Non-consensual synthetic intimate imagery at massive scale</p>
+      </div>
+    </div>
+    <div style="margin-top:2rem; max-width:700px; text-align:center;">
+      <p style="color:var(--muted); font-size:0.95rem; line-height:1.6;">
+        Modern GAN and diffusion model deepfakes can fool human observers <strong style="color:var(--accent2);">96% of the time</strong>.
+        Automated detection at scale is critical.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Slide 3: Solution ──────────────────────────── -->
+  <section class="slide">
+    <div class="slide-tag">02 · Solution</div>
+    <h2 style="text-align:center;">Why Vision Transformers?</h2>
+    <div class="grid-2" style="max-width:860px; margin-top:1.5rem; align-items:start;">
+      <div>
+        <h3>❌ CNN Limitations</h3>
+        <ul class="bullet-list" style="margin-top:0.5rem;">
+          <li>Local receptive field — misses global inconsistencies</li>
+          <li>Poor generalization across GAN architectures</li>
+          <li>No built-in global context modeling</li>
+          <li>Texture-biased — learns shortcuts</li>
+        </ul>
+      </div>
+      <div>
+        <h3>✅ ViT Advantages</h3>
+        <ul class="bullet-list" style="margin-top:0.5rem;">
+          <li>Self-attention spans the entire image globally</li>
+          <li>Patch-level inconsistency detection</li>
+          <li>ImageNet-21k pre-training → rich representations</li>
+          <li>Attention rollout gives free interpretability</li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top:2rem; padding:1rem 2rem; background:rgba(108,99,255,0.1); border-radius:12px; border:1px solid var(--border); text-align:center;">
+      <strong style="color:var(--accent3);">Key Insight:</strong>
+      <span style="color:var(--muted); font-size:0.9rem;"> Deepfakes have patch-level boundary artifacts at GAN composition regions — exactly what ViT's patch attention detects best.</span>
+    </div>
+  </section>
+
+  <!-- ── Slide 4: Architecture ─────────────────────── -->
+  <section class="slide">
+    <div class="slide-tag">03 · System Architecture</div>
+    <h2 style="text-align:center; margin-bottom:1.5rem;">Production System Design</h2>
+    <div style="display:flex; flex-direction:column; gap:0.4rem; width:100%; max-width:800px; align-items:stretch;">
+      <div class="arch-layer" style="background:rgba(255,107,107,0.15); border-color:rgba(255,107,107,0.3);">
+        🌐 <strong>Client Layer</strong> — Browser Dashboard · REST Client · CLI
+      </div>
+      <div style="text-align:center; color:var(--muted); font-size:0.8rem;">↕ HTTPS via Nginx</div>
+      <div class="arch-layer" style="background:rgba(108,99,255,0.2);">
+        ⚡ <strong>API Gateway (FastAPI)</strong> — Rate Limit · CORS · GZip · Prometheus · Auth
+      </div>
+      <div style="text-align:center; color:var(--muted); font-size:0.8rem;">↕ dependency injection</div>
+      <div class="grid-3" style="gap:0.5rem; max-width:800px;">
+        <div class="arch-block">🔍 Detection Service<br/><small style="color:var(--muted);">ONNX / PyTorch</small></div>
+        <div class="arch-block">📊 Model Registry<br/><small style="color:var(--muted);">MLflow</small></div>
+        <div class="arch-block">📋 History Service<br/><small style="color:var(--muted);">SQLite Async</small></div>
+      </div>
+      <div style="text-align:center; color:var(--muted); font-size:0.8rem;">↕</div>
+      <div class="arch-layer" style="background:rgba(78,205,196,0.15); border-color:rgba(78,205,196,0.3);">
+        🧠 <strong>Core ML</strong> — Face Extraction · ViT Inference · GradCAM · Attention Rollout
+      </div>
+      <div style="text-align:center; color:var(--muted); font-size:0.8rem;">↕</div>
+      <div class="arch-layer" style="background:rgba(255,255,255,0.05);">
+        💾 <strong>Storage</strong> — SQLite · model.pt · model.onnx · MLflow Artifacts
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Slide 5: ViT Model ─────────────────────────── -->
+  <section class="slide">
+    <div class="slide-tag">04 · Model Architecture</div>
+    <h2 style="text-align:center; margin-bottom:1.5rem;">Vision Transformer Pipeline</h2>
+    <div class="pipeline-row" style="margin-bottom:1.5rem;">
+      <div class="pipeline-box">224×224×3<br/><small style="color:var(--muted);">Face Crop</small></div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-box">196 Patch<br/><small style="color:var(--muted);">Tokens + [CLS]</small></div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-box" style="border-color:rgba(108,99,255,0.6);">×12 Transformer<br/><small style="color:var(--muted);">Multi-Head Attn</small></div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-box">[CLS] → Linear<br/><small style="color:var(--muted);">(768→2)</small></div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-box" style="border-color:rgba(78,205,196,0.5);">Softmax<br/><small style="color:var(--muted);">P(real), P(fake)</small></div>
+    </div>
+    <table style="max-width:700px;">
+      <tr><th>Variant</th><th>Parameters</th><th>Embed Dim</th><th>Layers</th><th>Heads</th></tr>
+      <tr><td>ViT-Tiny</td><td>6M</td><td>192</td><td>12</td><td>3</td></tr>
+      <tr><td>ViT-Small</td><td>22M</td><td>384</td><td>12</td><td>6</td></tr>
+      <tr><td><strong style="color:var(--accent3);">ViT-Base ★</strong></td><td><strong>86M</strong></td><td>768</td><td>12</td><td>12</td></tr>
+      <tr><td>ViT-Large</td><td>307M</td><td>1024</td><td>24</td><td>16</td></tr>
+    </table>
+    <p style="margin-top:1rem; color:var(--muted); font-size:0.85rem; text-align:center;">
+      ★ LoRA fine-tuning reduces trainable params from 86M → 1.2M (rank=8) maintaining accuracy
+    </p>
+  </section>
+
+  <!-- ── Slide 6: XAI ───────────────────────────────── -->
+  <section class="slide">
+    <div class="slide-tag">05 · Explainable AI</div>
+    <h2 style="text-align:center; margin-bottom:1.5rem;">Every Prediction is Explainable</h2>
+    <div class="grid-3" style="max-width:900px;">
+      <div class="card card-accent">
+        <h3>📡 GradCAM</h3>
+        <p style="font-size:0.85rem; color:var(--muted); margin-top:0.5rem;">
+          Gradient-weighted class activation maps. Hooks on final transformer block.
+          Highlights <em>why</em> the model made its decision.
+        </p>
+        <div style="margin-top:0.75rem; padding:0.5rem; background:var(--bg); border-radius:8px; font-size:0.78rem; color:var(--muted);">
+          α_k = Σ ∂y_c/∂A_kij<br/>
+          L = ReLU(Σ α_k A_k)
+        </div>
+      </div>
+      <div class="card card-green">
+        <h3>👁️ Attention Rollout</h3>
+        <p style="font-size:0.85rem; color:var(--muted); margin-top:0.5rem;">
+          Propagates attention through all transformer layers.
+          Shows <em>where</em> the model focused across the entire face.
+        </p>
+        <div style="margin-top:0.75rem; padding:0.5rem; background:var(--bg); border-radius:8px; font-size:0.78rem; color:var(--muted);">
+          R = Ā¹ · Ā² · ... · Ā^L<br/>
+          (each Ā^l = 0.5·A^l + 0.5·I)
+        </div>
+      </div>
+      <div class="card card-red">
+        <h3>🔥 Heatmap Overlay</h3>
+        <p style="font-size:0.85rem; color:var(--muted); margin-top:0.5rem;">
+          Jet colormap blended onto face crop.
+          <strong style="color:var(--accent2);">Red = suspicious</strong>,
+          <strong style="color:#4a9eff;">Blue = authentic</strong>.
+        </p>
+        <div style="margin-top:0.75rem; padding:0.5rem; background:var(--bg); border-radius:8px; font-size:0.78rem; color:var(--muted);">
+          overlay = cv2.addWeighted(<br/>
+          &nbsp;&nbsp;face, 0.4, heatmap, 0.6, 0)
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem; padding:0.75rem 2rem; background:rgba(78,205,196,0.1); border-radius:10px; border:1px solid rgba(78,205,196,0.3); font-size:0.9rem; text-align:center;">
+      + Natural language explanation: <em style="color:var(--accent3);">"High GAN blending artifacts detected around eye region and hairline boundary"</em>
+    </div>
+  </section>
+
+  <!-- ── Slide 7: Results ───────────────────────────── -->
+  <section class="slide">
+    <div class="slide-tag">06 · Results & Performance</div>
+    <h2 style="text-align:center; margin-bottom:1.5rem;">Detection Performance</h2>
+    <div class="grid-2" style="max-width:900px; align-items:start;">
+      <div>
+        <h3 style="margin-bottom:1rem;">FaceForensics++ Benchmark</h3>
+        <table>
+          <tr><th>Method</th><th>Accuracy</th><th>AUC-ROC</th></tr>
+          <tr><td>XceptionNet</td><td>96.4%</td><td>0.981</td></tr>
+          <tr><td>EfficientNet-B4</td><td>97.1%</td><td>0.985</td></tr>
+          <tr><td style="color:var(--accent3);"><strong>DeepGuard (ViT-B)</strong></td><td><strong>96.8%</strong></td><td><strong>0.978</strong></td></tr>
+        </table>
+      </div>
+      <div>
+        <h3 style="margin-bottom:1rem;">Inference Speed (CPU)</h3>
+        <table>
+          <tr><th>Runtime</th><th>Latency</th><th>Speedup</th></tr>
+          <tr><td>PyTorch</td><td>311.7 ms</td><td>1.00×</td></tr>
+          <tr><td style="color:var(--accent3);"><strong>ONNX Runtime</strong></td><td><strong>271.5 ms</strong></td><td><strong>1.15×</strong></td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="grid-4" style="margin-top:1.5rem; max-width:900px;">
+      <div class="card" style="text-align:center; padding:1rem;">
+        <div class="stat-number">187</div>
+        <div class="stat-label">Tests Passing</div>
+      </div>
+      <div class="card" style="text-align:center; padding:1rem;">
+        <div class="stat-number">62.8%</div>
+        <div class="stat-label">Code Coverage</div>
+      </div>
+      <div class="card" style="text-align:center; padding:1rem;">
+        <div class="stat-number">1.15×</div>
+        <div class="stat-label">ONNX Speedup</div>
+      </div>
+      <div class="card" style="text-align:center; padding:1rem;">
+        <div class="stat-number">96.8%</div>
+        <div class="stat-label">FF++ Accuracy</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Slide 8: MLOps ────────────────────────────── -->
+  <section class="slide">
+    <div class="slide-tag">07 · MLOps Stack</div>
+    <h2 style="text-align:center; margin-bottom:1.5rem;">Production-Grade Engineering</h2>
+    <div class="grid-2" style="max-width:900px; align-items:start;">
+      <div>
+        <h3 style="margin-bottom:0.75rem;">Infrastructure</h3>
+        <ul class="bullet-list">
+          <li><strong>Docker</strong>: Multi-stage builds, production + dev profiles</li>
+          <li><strong>Docker Compose</strong>: API + MLflow + Prometheus + Grafana + Nginx</li>
+          <li><strong>GitHub Actions</strong>: Lint → Test → ONNX → Docker CI pipeline</li>
+          <li><strong>Locust</strong>: Load testing with concurrent user simulations</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-bottom:0.75rem;">Observability</h3>
+        <ul class="bullet-list">
+          <li><strong>MLflow</strong>: Experiment tracking, model registry, artifact store</li>
+          <li><strong>Prometheus</strong>: HTTP metrics, inference duration, error rates</li>
+          <li><strong>Grafana</strong>: Pre-built dashboards with request rate & latency P99</li>
+          <li><strong>Structured Logging</strong>: X-Request-ID tracing across all requests</li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem; text-align:center;">
+      <div style="display:inline-flex; gap:0.5rem; flex-wrap:wrap; justify-content:center;">
+        <span class="badge-green badge">✓ Rate Limiting</span>
+        <span class="badge-green badge">✓ CORS</span>
+        <span class="badge-green badge">✓ GZip Compression</span>
+        <span class="badge-green badge">✓ JWT Auth</span>
+        <span class="badge-green badge">✓ Trusted Hosts</span>
+        <span class="badge-green badge">✓ Exception Handlers</span>
+        <span class="badge-green badge">✓ Async SQLite</span>
+        <span class="badge-green badge">✓ Repository Pattern</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Slide 9: Dashboard ─────────────────────────── -->
+  <section class="slide">
+    <div class="slide-tag">08 · Frontend Dashboard</div>
+    <h2 style="text-align:center; margin-bottom:1.5rem;">Modern Web Dashboard</h2>
+    <div class="grid-3" style="max-width:960px;">
+      <div class="card">🏠 <strong>Dashboard</strong><br/><small style="color:var(--muted);">Real-time stats, recent predictions, quick upload</small></div>
+      <div class="card">🖼️ <strong>Image Detection</strong><br/><small style="color:var(--muted);">Drag & drop upload, XAI tabs, confidence meter</small></div>
+      <div class="card">🎥 <strong>Video Detection</strong><br/><small style="color:var(--muted);">Frame-by-frame analysis, progress bar</small></div>
+      <div class="card">📷 <strong>Live Webcam</strong><br/><small style="color:var(--muted);">Real-time HTML5 MediaDevices scanning</small></div>
+      <div class="card">📋 <strong>History</strong><br/><small style="color:var(--muted);">Paginated, filterable prediction log</small></div>
+      <div class="card">📊 <strong>Analytics</strong><br/><small style="color:var(--muted);">Timeline, ratio, confidence charts (Chart.js)</small></div>
+      <div class="card">📈 <strong>Model Metrics</strong><br/><small style="color:var(--muted);">AUC-ROC, F1, precision, recall, speed</small></div>
+      <div class="card">⚙️ <strong>Settings</strong><br/><small style="color:var(--muted);">Model switching, ONNX toggle, thresholds</small></div>
+      <div class="card">🌙 <strong>Dark Mode</strong><br/><small style="color:var(--muted);">Midnight / Cyberpunk theme switching</small></div>
+    </div>
+  </section>
+
+  <!-- ── Slide 10: Technical Achievements ──────────── -->
+  <section class="slide">
+    <div class="slide-tag">09 · Technical Achievements</div>
+    <h2 style="text-align:center; margin-bottom:1.5rem;">10 Completed Milestones</h2>
+    <div class="grid-2" style="max-width:900px; align-items:start;">
+      <ul class="bullet-list">
+        <li>Milestone 0–1: Dataset pipeline (FF++, DFDC, CelebDF)</li>
+        <li>Milestone 2: ViT architecture + LoRA fine-tuning</li>
+        <li>Milestone 3: Training pipeline + MLflow tracking</li>
+        <li>Milestone 4: Async SQLite + repository layer</li>
+        <li>Milestone 5: FastAPI REST microservice</li>
+      </ul>
+      <ul class="bullet-list">
+        <li>Milestone 6: Docker + Prometheus + Grafana + E2E tests</li>
+        <li>Milestone 7: Bug fixes, 182 tests, 61.7% coverage</li>
+        <li>Milestone 8: Modern HTML/CSS/JS dashboard (10 pages)</li>
+        <li>Milestone 9: Explainable AI (GradCAM + Attention Rollout)</li>
+        <li>Milestone 10: ONNX, benchmarks, CI/CD, load tests</li>
+      </ul>
+    </div>
+    <div style="margin-top:1.5rem; padding:1rem 2rem; background:rgba(78,205,196,0.1); border:1px solid rgba(78,205,196,0.3); border-radius:12px; text-align:center;">
+      <span class="stat-number" style="font-size:1.5rem;">100%</span>
+      <span style="color:var(--muted);"> project completion · </span>
+      <span class="stat-number" style="font-size:1.5rem;">187</span>
+      <span style="color:var(--muted);"> tests passing · </span>
+      <span class="stat-number" style="font-size:1.5rem;">62.8%</span>
+      <span style="color:var(--muted);"> coverage</span>
+    </div>
+  </section>
+
+  <!-- ── Slide 11: Future Work ──────────────────────── -->
+  <section class="slide">
+    <div class="slide-tag">10 · Future Work</div>
+    <h2 style="text-align:center; margin-bottom:1.5rem;">Roadmap & Next Steps</h2>
+    <div class="grid-3" style="max-width:960px;">
+      <div class="card card-accent">
+        <h3>🔬 Model Research</h3>
+        <ul class="bullet-list" style="font-size:0.82rem; margin-top:0.5rem;">
+          <li>Diffusion model deepfake detection</li>
+          <li>INT8 quantization (2–4× speedup)</li>
+          <li>Cross-dataset zero-shot generalization</li>
+          <li>Model distillation for edge devices</li>
+        </ul>
+      </div>
+      <div class="card card-green">
+        <h3>🌐 Feature Expansion</h3>
+        <ul class="bullet-list" style="font-size:0.82rem; margin-top:0.5rem;">
+          <li>Audio deepfake / voice clone detection</li>
+          <li>WebSocket real-time streaming API</li>
+          <li>SHAP explainability integration</li>
+          <li>Browser extension for web content</li>
+        </ul>
+      </div>
+      <div class="card card-red">
+        <h3>🏗️ Infrastructure</h3>
+        <ul class="bullet-list" style="font-size:0.82rem; margin-top:0.5rem;">
+          <li>PostgreSQL for high-concurrency prod</li>
+          <li>Kubernetes Helm chart deployment</li>
+          <li>Federated detection network</li>
+          <li>C2PA content authenticity integration</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Slide 12: Thank You ────────────────────────── -->
+  <section class="slide" style="background: radial-gradient(ellipse at center, rgba(108,99,255,0.2), transparent 70%), var(--bg);">
+    <div class="slide-tag">Thank You</div>
+    <h1 class="gradient-text" style="text-align:center; font-size:clamp(2rem,5vw,3.5rem);">🔍 DeepGuard</h1>
+    <div class="divider"></div>
+    <p class="subtitle" style="margin-bottom:2rem;">
+      A production-ready deepfake detection system demonstrating
+      state-of-the-art Vision Transformer architecture with full MLOps practices.
+    </p>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem; max-width:700px;">
+      <div style="text-align:center; padding:1rem;">
+        <div class="stat-number">187</div>
+        <div class="stat-label">Tests Passing</div>
+      </div>
+      <div style="text-align:center; padding:1rem;">
+        <div class="stat-number">10</div>
+        <div class="stat-label">Milestones Done</div>
+      </div>
+      <div style="text-align:center; padding:1rem;">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Completion</div>
+      </div>
+    </div>
+    <div style="margin-top:2rem; color:var(--muted); font-size:0.9rem;">
+      📖 Full documentation: <code style="color:var(--accent3);">docs/</code> |
+      🐳 Deploy: <code style="color:var(--accent3);">docker-compose up</code> |
+      🧪 Test: <code style="color:var(--accent3);">make test</code>
+    </div>
+  </section>
+
+</div>
+
+<!-- ── Navigation ─────────────────────────────────────── -->
+<div class="nav-bar">
+  <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)" disabled>← Previous</button>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width: 8.33%;"></div>
+  </div>
+  <span class="slide-counter" id="slideCounter">1 / 12</span>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill2" style="width: 8.33%;"></div>
+  </div>
+  <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+  const total = slides.length;
+
+  function changeSlide(dir) {
+    slides[current].classList.remove('active');
+    if (dir === -1) slides[current].classList.add('prev');
+
+    current = Math.max(0, Math.min(total - 1, current + dir));
+
+    slides.forEach((s, i) => {
+      s.classList.remove('active', 'prev');
+      if (i === current) s.classList.add('active');
+    });
+
+    const pct = ((current + 1) / total * 100) + '%';
+    document.getElementById('progressFill').style.width = pct;
+    document.getElementById('progressFill2').style.width = pct;
+    document.getElementById('slideCounter').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === total - 1;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') changeSlide(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') changeSlide(-1);
+  });
+</script>
+</body>
+</html>

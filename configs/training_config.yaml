@@ -126,7 +126,7 @@ augmentation:
 
 # ── Dataset Split ─────────────────────────────────────────
 dataset:
-  name: ff++                           # ff++ | dfdc | celeb-df | custom
+  name: custom                           # ff++ | dfdc | celeb-df | custom
   root: ./datasets
   train_split: 0.8
   val_split: 0.1

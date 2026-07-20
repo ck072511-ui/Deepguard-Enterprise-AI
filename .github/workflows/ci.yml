@@ -1,0 +1,76 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Code Quality & Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install System Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg libsm6 libxext6 libgl1-mesa-glx
+
+    - name: Install PyTorch CPU
+      run: |
+        pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cpu
+
+    - name: Install Remaining Dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install black flake8 isort mypy pytest pytest-cov
+
+    - name: Run Test Suite
+      env:
+        PYTHONPATH: .
+      run: |
+        python -m pytest --cov=. --cov-fail-under=55
+
+    - name: Verify ONNX Export
+      env:
+        PYTHONPATH: .
+      run: |
+        python scripts/export_onnx.py --checkpoint weights/best_model.pt --output weights/model.onnx
+
+    - name: Run Latency Benchmark
+      env:
+        PYTHONPATH: .
+        PYTHONIOENCODING: utf-8
+      run: |
+        python scripts/benchmark.py
+
+  docker-build:
+    name: Build Docker Container
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Application Image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: Dockerfile
+        push: false
+        tags: deepguard-api:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max

@@ -45,6 +45,7 @@ mlflow-skinny==2.15.1
 # ── ONNX Runtime ──────────────────────────────────────────
 onnx==1.16.2
 onnxruntime==1.18.1
+onnxscript==0.7.1
 
 # ── Configuration Management ──────────────────────────────
 python-dotenv==1.0.1
@@ -67,6 +68,8 @@ cryptography==43.0.1
 matplotlib==3.9.2
 seaborn==0.13.2
 plotly==5.24.1
+streamlit==1.37.1
+
 
 # ── Data Processing & Utilities ──────────────────────────
 tqdm==4.66.5

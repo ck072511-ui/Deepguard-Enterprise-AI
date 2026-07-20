@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepGuard — Deepfake Detection Suite</title>
+    <!-- Inter Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles/main.css">
+    <script>
+        window.__DEEPGUARD_CONFIG__ = window.__DEEPGUARD_CONFIG__ || {};
+        if (!window.__DEEPGUARD_CONFIG__.API_BASE_URL) {
+            window.__DEEPGUARD_CONFIG__.API_BASE_URL = (window.location.port && window.location.port !== '8000') 
+                ? 'http://localhost:8000/api/v1' 
+                : `${window.location.origin}/api/v1`;
+        }
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i data-lucide="shield-check"></i>
+                    <span>DeepGuard</span>
+                </div>
+                <span class="logo-sub">Enterprise AI</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active" data-page="dashboard">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Dashboard</span>
+                    </li>
+                    <li class="nav-item" data-page="image-detect">
+                        <i data-lucide="image"></i>
+                        <span>Image Detection</span>
+                    </li>
+                    <li class="nav-item" data-page="video-detect">
+                        <i data-lucide="video"></i>
+                        <span>Video Detection</span>
+                    </li>
+                    <li class="nav-item" data-page="webcam">
+                        <i data-lucide="camera"></i>
+                        <span>Real Time Webcam</span>
+                    </li>
+                    <li class="nav-item" data-page="history">
+                        <i data-lucide="history"></i>
+                        <span>Prediction History</span>
+                    </li>
+                    <li class="nav-item" data-page="analytics">
+                        <i data-lucide="bar-chart-3"></i>
+                        <span>Analytics</span>
+                    </li>
+                    <li class="nav-item" data-page="metrics">
+                        <i data-lucide="target"></i>
+                        <span>Model Metrics</span>
+                    </li>
+                    <li class="nav-item" data-page="profile">
+                        <i data-lucide="user"></i>
+                        <span>User Profile</span>
+                    </li>
+                    <li class="nav-item" data-page="settings">
+                        <i data-lucide="sliders"></i>
+                        <span>Settings</span>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="api-status-badge" id="api-status-badge">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Checking API...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-wrapper">
+            <!-- Top Navbar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <h1 class="page-title" id="current-page-title">Dashboard</h1>
+                </div>
+                <div class="topbar-right">
+                    <!-- Theme Selector -->
+                    <div class="theme-selector">
+                        <button class="theme-btn active" data-theme="midnight" title="Midnight Glow">
+                            <i data-lucide="moon"></i>
+                        </button>
+                        <button class="theme-btn" data-theme="cyberpunk" title="Cyberpunk Neon">
+                            <i data-lucide="zap"></i>
+                        </button>
+                        <button class="theme-btn" data-theme="light" title="Apple Light">
+                            <i data-lucide="sun"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="divider"></div>
+                    
+                    <!-- Active Model Info -->
+                    <div class="active-model-summary">
+                        <span class="model-label">Model:</span>
+                        <span class="model-name" id="topbar-model-name">vit_base_patch16_224</span>
+                    </div>
+
+                    <!-- User Dropdown Profile Shortcut -->
+                    <div class="user-profile-trigger" id="topbar-profile-btn">
+                        <div class="avatar">AG</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Inner Page Content Dynamic Placeholder -->
+            <div class="content-container" id="page-content">
+                <!-- Page contents injected here dynamically -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Alert / Notification Overlay Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Application Script Bundles -->
+    <script src="src/api.js" type="module"></script>
+    <script src="src/app.js" type="module"></script>
+</body>
+</html>

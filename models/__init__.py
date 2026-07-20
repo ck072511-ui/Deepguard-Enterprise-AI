@@ -9,3 +9,10 @@ Packages:
     models.backbones     — Pre-trained backbone wrappers (timm integration)
     models.heads         — Classification head modules
 """
+
+from models.architectures.vit import ViTClassifier
+from models.config import FullModelConfig
+from models.factory import ModelFactory
+
+__all__ = ["ViTClassifier", "FullModelConfig", "ModelFactory"]
+

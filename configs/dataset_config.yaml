@@ -1,0 +1,171 @@
+# ============================================================
+# DeepGuard — configs/dataset_config.yaml
+# Dataset-specific paths, download URLs and preprocessing settings
+# ============================================================
+
+datasets:
+
+  # ── CelebDF-v2 ────────────────────────────────────────────
+  celeb-df:
+    version: "2.0"
+    description: "Celebrity deepfake dataset with 590 real and 5639 fake videos"
+    root: ./datasets/raw/celeb-df
+    structure:
+      real_dirs:
+        - Celeb-real
+        - YouTube-real
+      fake_dirs:
+        - Celeb-synthesis
+      test_list: List_of_testing_videos.txt
+    download:
+      source: manual
+      url: https://github.com/yuezunli/celeb-deepfakeforensics
+      instructions: |
+        CelebDF-v2 requires a signed license agreement.
+        1. Visit: https://github.com/yuezunli/celeb-deepfakeforensics
+        2. Fill in the Google Form to request access
+        3. Download and extract to datasets/raw/celeb-df/
+    expected_checksums: {}
+
+  # ── FaceForensics++ ───────────────────────────────────────
+  ff++:
+    version: "1.0"
+    description: "FaceForensics++ with multiple manipulation methods and compression levels"
+    root: ./datasets/raw/ff++
+    structure:
+      real_dirs:
+        - original_sequences/actors/raw/videos
+        - original_sequences/youtube/raw/videos
+      fake_dirs:
+        - manipulated_sequences/Deepfakes/raw/videos
+        - manipulated_sequences/Face2Face/raw/videos
+        - manipulated_sequences/FaceSwap/raw/videos
+        - manipulated_sequences/NeuralTextures/raw/videos
+        - manipulated_sequences/FaceShifter/raw/videos
+      split_files:
+        train: ./datasets/raw/ff++/splits/train.json
+        val: ./datasets/raw/ff++/splits/val.json
+        test: ./datasets/raw/ff++/splits/test.json
+    compression_levels:
+      - c0    # raw (no compression)
+      - c23   # light compression (HQ)
+      - c40   # heavy compression (LQ)
+    default_compression: c23
+    manipulation_types:
+      - Deepfakes
+      - Face2Face
+      - FaceSwap
+      - NeuralTextures
+      - FaceShifter
+    download:
+      source: script
+      url: https://github.com/ondyari/FaceForensics
+      instructions: |
+        1. Request access at: https://github.com/ondyari/FaceForensics
+        2. Use the provided download script:
+           python scripts/download_ff++.py <output_path> <dataset_type> <compression>
+    expected_checksums: {}
+
+  # ── DFDC ─────────────────────────────────────────────────
+  dfdc:
+    version: "1.0"
+    description: "Deepfake Detection Challenge dataset with ~100k videos"
+    root: ./datasets/raw/dfdc
+    structure:
+      parts_dir: .
+      metadata_filename: metadata.json
+      num_parts: 50
+    download:
+      source: kaggle
+      dataset_id: c/deepfake-detection-challenge
+      instructions: |
+        1. Install Kaggle CLI: pip install kaggle
+        2. Set up API credentials: ~/.kaggle/kaggle.json
+        3. Run: make prepare-dataset DATASET=dfdc
+        4. Or manually: kaggle competitions download -c deepfake-detection-challenge
+    expected_checksums: {}
+
+  # ── Custom Dataset ────────────────────────────────────────
+  custom:
+    version: "1.0"
+    description: "User-provided custom dataset in real/fake directory structure"
+    root: ./datasets/raw/custom
+    structure:
+      real_dir: real
+      fake_dir: fake
+    download:
+      source: manual
+      instructions: |
+        Organize your dataset as follows:
+          datasets/raw/custom/
+          ├── real/          # Real images or videos
+          │   ├── img001.jpg
+          │   └── ...
+          └── fake/          # Fake/manipulated images or videos
+              ├── img001.jpg
+              └── ...
+    expected_checksums: {}
+
+# ── Processed Output ────────────────────────────────────────
+processed:
+  root: ./datasets/processed
+  face_crops_dir: face_crops
+  manifests_dir: manifests
+  statistics_dir: statistics
+  visualizations_dir: visualizations
+  cache_dir: ./datasets/cache
+
+# ── Preprocessing ────────────────────────────────────────────
+preprocessing:
+  image:
+    target_size: 224
+    face_margin: 0.3
+    min_face_size: 40                # Minimum face detection size (pixels)
+    output_format: jpg
+    jpeg_quality: 95
+
+  video:
+    max_frames_per_video: 30
+    frame_sample_strategy: uniform   # uniform | first_n | random | scene_change
+    min_frame_interval: 1
+    target_fps: null                 # null = original fps
+
+  face_detection:
+    backend: mtcnn                   # mtcnn | opencv_haar | opencv_dnn
+    min_confidence: 0.90
+    keep_largest_only: false
+    fallback_to_full_frame: true     # Use full frame if no face detected
+
+# ── Data Validation ──────────────────────────────────────────
+validation:
+  check_file_exists: true
+  check_file_readable: true
+  check_min_file_size_bytes: 1024   # 1 KB minimum
+  check_image_loadable: false        # Slow but thorough
+  allowed_image_extensions:
+    - .jpg
+    - .jpeg
+    - .png
+    - .webp
+    - .bmp
+  allowed_video_extensions:
+    - .mp4
+    - .avi
+    - .mov
+    - .mkv
+    - .webm
+
+# ── Augmentation Settings ────────────────────────────────────
+# (detailed per-transform config is in training_config.yaml)
+augmentation:
+  image_size: 224
+  normalize:
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+
+# ── Data Versioning ───────────────────────────────────────────
+versioning:
+  manifests_dir: ./datasets/processed/manifests
+  checksum_algorithm: sha256
+  auto_version: true
+  version_format: "%Y%m%d_%H%M%S"
