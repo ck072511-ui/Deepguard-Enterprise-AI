@@ -91,6 +91,12 @@
   - New files: `frontend/src/pages/upload_media.js` (self-contained widget module).
   - Modified: `frontend/src/pages/dashboard.js` (import + embed + callback), `frontend/styles/main.css` (12 new CSS classes).
 
+- **Milestone 13: Streamlit Community Cloud Deployment Compatibility** ✅ NEW
+  - Created `runtime.txt` specifying `python-3.11` to force Streamlit Community Cloud to build the project using a compatible Python 3.11 runtime (instead of defaulting to an incompatible Python version like 3.14).
+  - Created `.python-version` specifying `3.11.9` for fallback environment versioning tool support.
+  - Removed unused `dlib` dependency from `requirements.txt` to prevent compile-time build errors on Linux servers lacking CMake and C++ build chains.
+  - Verified local build and run environment compatibility.
+
 ## Current Milestone
 - None. All milestones fully completed. Project is 100% finalized.
 

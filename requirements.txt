@@ -85,7 +85,6 @@ msgpack==1.0.8
 
 # ── Face Detection (preprocessing) ───────────────────────
 facenet-pytorch==2.6.0
-dlib==19.24.6; sys_platform != "win32"
 
 # ── Metrics ───────────────────────────────────────────────
 scikit-learn==1.5.1
