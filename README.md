@@ -12,6 +12,7 @@
 ![Coverage](https://img.shields.io/badge/Coverage-62%25-brightgreen)
 ![Tests](https://img.shields.io/badge/Tests-187_passing-success)
 ![License](https://img.shields.io/badge/License-Apache_2.0-green)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/deploy?repository=ck072511-ui/Deepguard-Enterprise-AI&branch=main&mainModule=frontend/app.py)
 
 **A production-ready, end-to-end deepfake detection pipeline powered by Vision Transformers (ViT),
 served via a high-performance FastAPI backend with Explainable AI, full MLOps observability, and
