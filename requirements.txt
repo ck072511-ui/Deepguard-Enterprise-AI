@@ -4,17 +4,17 @@
 # ============================================================
 
 # ── Deep Learning ─────────────────────────────────────────
-torch>=2.3.1
-torchvision>=0.18.1
-torchaudio>=2.3.1
-timm>=1.0.9
+torch>=2.3.1; python_version < "3.14"
+torchvision>=0.18.1; python_version < "3.14"
+torchaudio>=2.3.1; python_version < "3.14"
+timm>=1.0.9; python_version < "3.14"
 
 # ── Computer Vision & Image Processing ───────────────────
 opencv-python-headless>=4.10.0.84
 Pillow>=10.4.0
-albumentations>=1.4.13
-imageio>=2.35.1
-scikit-image>=0.24.0
+albumentations>=1.4.13; python_version < "3.14"
+imageio>=2.35.1; python_version < "3.14"
+scikit-image>=0.24.0; python_version < "3.14"
 
 # ── Numerical Computing ───────────────────────────────────
 numpy>=1.26.4
@@ -43,9 +43,9 @@ mlflow>=2.15.1
 mlflow-skinny>=2.15.1
 
 # ── ONNX Runtime ──────────────────────────────────────────
-onnx>=1.16.2
-onnxruntime>=1.18.1
-onnxscript>=0.7.1
+onnx>=1.16.2; python_version < "3.14"
+onnxruntime>=1.18.1; python_version < "3.14"
+onnxscript>=0.7.1; python_version < "3.14"
 
 # ── Configuration Management ──────────────────────────────
 python-dotenv>=1.0.1
@@ -84,11 +84,11 @@ orjson==3.10.7
 msgpack==1.0.8
 
 # ── Face Detection (preprocessing) ───────────────────────
-facenet-pytorch>=2.6.0
+facenet-pytorch>=2.6.0; python_version < "3.14"
 
 # ── Metrics ───────────────────────────────────────────────
-scikit-learn>=1.5.1
-torchmetrics>=1.4.1
+scikit-learn>=1.5.1; python_version < "3.14"
+torchmetrics>=1.4.1; python_version < "3.14"
 
 # ── Caching ───────────────────────────────────────────────
 cachetools>=5.5.0
