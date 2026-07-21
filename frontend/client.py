@@ -23,21 +23,46 @@ T = TypeVar('T')
 
 
 def resolve_api_base_url(base_url: str | None = None) -> str:
-    """Resolve the backend API base URL without any localhost-only fallback."""
+    """Resolve the backend API base URL using st.secrets, environment variables, or defaults."""
     if base_url:
         return base_url.rstrip("/")
 
-    env_candidates = [
-        os.getenv("DEEPGUARD_API_URL"),
-        os.getenv("DEEPGUARD_API_BASE_URL"),
-        os.getenv("BACKEND_URL"),
-        os.getenv("API_BASE_URL"),
-    ]
-    for candidate in env_candidates:
-        if candidate:
-            return candidate.rstrip("/")
+    resolved = None
 
-    return "/api/v1"
+    # 1. Try Streamlit Secrets
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets"):
+            resolved = st.secrets.get("DEEPGUARD_API_URL")
+            if not resolved and "general" in st.secrets:
+                resolved = st.secrets["general"].get("DEEPGUARD_API_URL")
+    except Exception as e:
+        logger.debug(f"Streamlit secrets not available or failed to load: {e}")
+
+    # 2. Try Environment Variables
+    if not resolved:
+        env_candidates = [
+            os.getenv("DEEPGUARD_API_URL"),
+            os.getenv("DEEPGUARD_API_BASE_URL"),
+            os.getenv("BACKEND_URL"),
+            os.getenv("API_BASE_URL"),
+        ]
+        for candidate in env_candidates:
+            if candidate:
+                resolved = candidate
+                break
+
+    # 3. Fallback to Production Render URL
+    if not resolved:
+        resolved = "https://deepguard-enterprise-ai.onrender.com/api/v1"
+
+    resolved = resolved.rstrip("/")
+    
+    # Print to Streamlit stdout/stderr logs and python logger
+    print(f"[DeepGuard ST Startup] Resolved DEEPGUARD_API_URL: {resolved}")
+    logger.info(f"Resolved DEEPGUARD_API_URL: {resolved}")
+    
+    return resolved
 
 
 class APIException(Exception):

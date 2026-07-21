@@ -26,12 +26,26 @@ from frontend.utils import notify, handle_api_errors, with_loading
 
 @st.cache_resource(show_spinner=False)
 def get_api_client() -> DeepGuardAPIClient:
-    return DeepGuardAPIClient(
-        os.getenv("DEEPGUARD_API_URL")
-        or os.getenv("DEEPGUARD_API_BASE_URL")
-        or os.getenv("BACKEND_URL")
-        or os.getenv("API_BASE_URL")
-    )
+    url = None
+    try:
+        if hasattr(st, "secrets"):
+            url = st.secrets.get("DEEPGUARD_API_URL")
+            if not url and "general" in st.secrets:
+                url = st.secrets["general"].get("DEEPGUARD_API_URL")
+    except Exception:
+        pass
+
+    if not url:
+        url = (
+            os.getenv("DEEPGUARD_API_URL")
+            or os.getenv("DEEPGUARD_API_BASE_URL")
+            or os.getenv("BACKEND_URL")
+            or os.getenv("API_BASE_URL")
+        )
+
+    client = DeepGuardAPIClient(base_url=url)
+    print(f"[DeepGuard App Startup] API Client initialized with base_url: {client.base_url}")
+    return client
 
 
 client = get_api_client()
