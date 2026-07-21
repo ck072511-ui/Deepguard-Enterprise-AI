@@ -153,7 +153,7 @@ class DeepGuardAPIClient:
         self, 
         base_url: str | None = None,
         api_key: str | None = None,
-        timeout: int = 10,
+        timeout: int = 60,
         max_retries: int = 3,
         pool_connections: int = 10,
         pool_maxsize: int = 20,
@@ -308,7 +308,7 @@ class DeepGuardAPIClient:
         """
         try:
             endpoint = urljoin(self.base_url.rstrip("/") + "/", "health")
-            response = self.session.get(endpoint, timeout=5)
+            response = self.session.get(endpoint, timeout=60)
             return self._handle_response(response)
         except Exception as e:
             logger.error(f"Health check failed: {e}")
