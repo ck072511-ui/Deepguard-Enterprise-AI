@@ -215,6 +215,20 @@ For a detailed guide see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
 ### Quick Start — Local Development
 
+#### Backend API
+```bash
+python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+#### Streamlit Frontend
+```bash
+DEEPGUARD_API_URL=http://127.0.0.1:8000/api/v1 python -m streamlit run frontend/app.py
+```
+
+#### Production Deployment Notes
+- Backend: deploy the FastAPI app to Render or Railway and set `DEEPGUARD_API_URL` to the deployed backend URL.
+- Frontend: deploy the Streamlit app on Streamlit Community Cloud and configure the same backend URL as an environment variable.
+
 ```bash
 # 1. Clone the repository
 git clone https://github.com/your-org/deepguard.git

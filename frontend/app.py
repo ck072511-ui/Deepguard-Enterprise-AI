@@ -4,6 +4,7 @@ DeepGuard — frontend/app.py
 Modern Streamlit frontend dashboard for DeepGuard Deepfake Detection.
 """
 
+import logging
 import sys
 import os
 import time
@@ -14,14 +15,26 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+logger = logging.getLogger(__name__)
+
 # Setup python path to include parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from frontend.client import DeepGuardAPIClient
 from frontend.utils import notify, handle_api_errors, with_loading
 
-# Initialize API Client
-client = DeepGuardAPIClient()
+
+@st.cache_resource(show_spinner=False)
+def get_api_client() -> DeepGuardAPIClient:
+    return DeepGuardAPIClient(
+        os.getenv("DEEPGUARD_API_URL")
+        or os.getenv("DEEPGUARD_API_BASE_URL")
+        or os.getenv("BACKEND_URL")
+        or os.getenv("API_BASE_URL")
+    )
+
+
+client = get_api_client()
 
 # Page configuration
 st.set_page_config(
@@ -120,7 +133,7 @@ def render_dashboard(health: dict | None, stats: dict | None) -> None:
     # Handle offline mode gracefully
     if not health or not stats:
         st.warning("⚠️ Backend API is offline. Displaying limited information.")
-        st.info("👉 Please start the backend server: `python -m uvicorn backend.main:app --reload`")
+        st.info("👉 Configure DEEPGUARD_API_URL to point to the deployed backend, for example: https://your-backend.example.com/api/v1")
         return
 
     # Extract real data from stats
@@ -799,7 +812,12 @@ def main() -> None:
     """, unsafe_allow_html=True)
 
     # Check connection health to backend
-    health_status = client.get_health()
+    health_status = None
+    try:
+        health_status = client.get_health()
+    except Exception as exc:
+        logger.error("Failed to fetch backend health: %s", exc)
+        health_status = None
     
     if health_status:
         st.sidebar.markdown("""
@@ -843,7 +861,7 @@ def main() -> None:
     
     if health_status:
         try:
-            history_records = client.get_history(limit=50)
+            history_records = client.get_history(page=1, page_size=50)
         except Exception as exc:
             logger.error("Failed to load history records: %s", exc)
             history_records = []

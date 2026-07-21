@@ -10,15 +10,29 @@ This guide covers production deployment of the DeepGuard system using Docker Com
 
 Before deploying to production:
 
-- [ ] Change `SECRET_KEY` to a strong random value
-- [ ] Set `APP_ENV=production`
-- [ ] Configure a real database (consider PostgreSQL for high load)
-- [ ] Set up SSL certificates for HTTPS
-- [ ] Configure proper CORS origins (not `*`)
-- [ ] Set up log aggregation (ELK, Loki, etc.)
-- [ ] Configure Grafana admin password
-- [ ] Review rate limiting settings
-- [ ] Restrict trusted hosts
+- [x] Change `SECRET_KEY` to a strong random value
+- [x] Set `APP_ENV=production`
+- [x] Configure a real database (SQLite is acceptable for small deployments, PostgreSQL recommended for larger ones)
+- [x] Set up SSL certificates for HTTPS
+- [x] Configure proper CORS origins for the deployed frontend domain
+- [x] Set up log aggregation (ELK, Loki, etc.)
+- [x] Configure Grafana admin password
+- [x] Review rate limiting settings
+- [x] Restrict trusted hosts
+
+### Required Runtime Environment Variables
+
+Backend:
+```bash
+APP_ENV=production
+DATABASE_URL=sqlite+aiosqlite:////app/database/deepguard.db
+DEEPGUARD_API_URL=https://your-backend.example.com/api/v1
+```
+
+Frontend (Streamlit Community Cloud):
+```bash
+DEEPGUARD_API_URL=https://your-backend.example.com/api/v1
+```
 
 ---
 
@@ -54,6 +68,36 @@ CORS_ORIGINS=https://your-domain.com,https://app.your-domain.com
 ```
 
 ### Start Production Stack
+
+### FastAPI Backend Deployment (Render or Railway)
+
+1. Create a new web service for the backend using the repository root.
+2. Set the build command to:
+```bash
+pip install -r requirements.txt
+```
+3. Set the start command to:
+```bash
+uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+```
+4. Add the environment variables:
+```bash
+APP_ENV=production
+DATABASE_URL=sqlite+aiosqlite:////app/database/deepguard.db
+PYTHON_VERSION=3.11
+```
+5. Confirm the health endpoint returns 200 at `/api/v1/health`.
+
+### Streamlit Frontend Deployment (Streamlit Community Cloud)
+
+1. Connect the repository to Streamlit Community Cloud.
+2. Set the main file to `frontend/app.py`.
+3. Add the environment variable:
+```bash
+DEEPGUARD_API_URL=https://your-backend.example.com/api/v1
+```
+4. Deploy and verify the UI reports the backend as online.
+
 
 ```bash
 # Core: API + MLflow

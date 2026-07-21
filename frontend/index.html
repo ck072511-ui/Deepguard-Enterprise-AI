@@ -17,9 +17,7 @@
     <script>
         window.__DEEPGUARD_CONFIG__ = window.__DEEPGUARD_CONFIG__ || {};
         if (!window.__DEEPGUARD_CONFIG__.API_BASE_URL) {
-            window.__DEEPGUARD_CONFIG__.API_BASE_URL = (window.location.port && window.location.port !== '8000') 
-                ? 'http://localhost:8000/api/v1' 
-                : `${window.location.origin}/api/v1`;
+            window.__DEEPGUARD_CONFIG__.API_BASE_URL = '/api/v1';
         }
     </script>
 </head>

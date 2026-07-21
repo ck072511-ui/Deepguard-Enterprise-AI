@@ -4,11 +4,18 @@
 
 const DEFAULT_API_BASE = '/api/v1';
 
-function getApiBaseUrl() {
-    if (typeof window !== 'undefined' && window.__DEEPGUARD_CONFIG__?.API_BASE_URL) {
-        return window.__DEEPGUARD_CONFIG__.API_BASE_URL;
-    }
+function getConfiguredApiBaseUrl() {
+    const fromWindow = typeof window !== 'undefined' ? window.__DEEPGUARD_CONFIG__?.API_BASE_URL : null;
+    if (fromWindow) return fromWindow;
+
+    const fromEnv = typeof window !== 'undefined' ? window.__DEEPGUARD_CONFIG__?.BACKEND_URL : null;
+    if (fromEnv) return fromEnv;
+
     return DEFAULT_API_BASE;
+}
+
+function getApiBaseUrl() {
+    return getConfiguredApiBaseUrl();
 }
 
 function getApiKey() {

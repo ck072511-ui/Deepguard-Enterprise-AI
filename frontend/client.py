@@ -11,6 +11,7 @@ import time
 from typing import Any, Callable, TypeVar
 from functools import wraps
 from datetime import datetime, timedelta
+from urllib.parse import urljoin
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -19,6 +20,24 @@ from urllib3.util.retry import Retry
 logger = logging.getLogger(__name__)
 
 T = TypeVar('T')
+
+
+def resolve_api_base_url(base_url: str | None = None) -> str:
+    """Resolve the backend API base URL without any localhost-only fallback."""
+    if base_url:
+        return base_url.rstrip("/")
+
+    env_candidates = [
+        os.getenv("DEEPGUARD_API_URL"),
+        os.getenv("DEEPGUARD_API_BASE_URL"),
+        os.getenv("BACKEND_URL"),
+        os.getenv("API_BASE_URL"),
+    ]
+    for candidate in env_candidates:
+        if candidate:
+            return candidate.rstrip("/")
+
+    return "/api/v1"
 
 
 class APIException(Exception):
@@ -125,7 +144,7 @@ class DeepGuardAPIClient:
             pool_connections: Number of connection pools
             pool_maxsize: Max connections per pool
         """
-        self.base_url = base_url or os.getenv("DEEPGUARD_API_URL", "http://localhost:8000/api/v1")
+        self.base_url = resolve_api_base_url(base_url)
         self.api_key = api_key or os.getenv("DEEPGUARD_API_KEY", "")
         self.timeout = timeout
         self.max_retries = max_retries
@@ -263,10 +282,8 @@ class DeepGuardAPIClient:
             Health status dict or None if unreachable
         """
         try:
-            response = self.session.get(
-                f"{self.base_url}/health",
-                timeout=5
-            )
+            endpoint = urljoin(self.base_url.rstrip("/") + "/", "health")
+            response = self.session.get(endpoint, timeout=5)
             return self._handle_response(response)
         except Exception as e:
             logger.error(f"Health check failed: {e}")
@@ -284,7 +301,7 @@ class DeepGuardAPIClient:
             APIException: On any API error
         """
         response = self.session.get(
-            f"{self.base_url}/history/stats",
+            urljoin(self.base_url.rstrip("/") + "/", "history/stats"),
             timeout=self.timeout
         )
         return self._handle_response(response)
@@ -333,7 +350,7 @@ class DeepGuardAPIClient:
             params["status"] = status
         
         response = self.session.get(
-            f"{self.base_url}/history",
+            urljoin(self.base_url.rstrip("/") + "/", "history"),
             params=params,
             timeout=self.timeout
         )
@@ -351,7 +368,7 @@ class DeepGuardAPIClient:
             APIException: On any API error
         """
         response = self.session.get(
-            f"{self.base_url}/models",
+            urljoin(self.base_url.rstrip("/") + "/", "models"),
             timeout=self.timeout
         )
         return self._handle_response(response)
@@ -378,7 +395,7 @@ class DeepGuardAPIClient:
             "registry_path": registry_path
         }
         response = self.session.post(
-            f"{self.base_url}/models",
+            urljoin(self.base_url.rstrip("/") + "/", "models"),
             json=payload,
             timeout=self.timeout
         )
@@ -399,7 +416,7 @@ class DeepGuardAPIClient:
             APIException: On any API error
         """
         response = self.session.post(
-            f"{self.base_url}/models/{model_id}/activate",
+            urljoin(self.base_url.rstrip("/") + "/", f"models/{model_id}/activate"),
             timeout=self.timeout
         )
         return self._handle_response(response)
@@ -421,7 +438,7 @@ class DeepGuardAPIClient:
         """
         files = {"file": (filename, file_bytes, "image/jpeg")}
         response = self.session.post(
-            f"{self.base_url}/detect",
+            urljoin(self.base_url.rstrip("/") + "/", "detect"),
             files=files,
             timeout=60  # Extended timeout for image processing
         )
@@ -444,7 +461,7 @@ class DeepGuardAPIClient:
         """
         files = {"file": (filename, file_bytes, "video/mp4")}
         response = self.session.post(
-            f"{self.base_url}/detect",
+            urljoin(self.base_url.rstrip("/") + "/", "detect"),
             files=files,
             timeout=300  # Extended timeout for video processing
         )

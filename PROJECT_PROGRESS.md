@@ -103,10 +103,10 @@
   - Verified local build and run environment compatibility.
 
 ## Current Milestone
-- None. All milestones fully completed. Project is 100% finalized.
+- Production deployment hardening completed. The frontend now uses environment-driven backend URLs, the backend is configured for cloud hosting, and the Streamlit app runs cleanly with the pinned runtime.
 
 ## Remaining Milestones
-- None.
+- None. Production deployment preparation is complete.
 
 ## Completed & Modified Files
 
@@ -143,10 +143,10 @@
 - `PROJECT_PROGRESS.md` — Updated progress logs
 
 ## Pending Tasks
-- None. All tests pass and coverage is above the threshold (62.98% total coverage, threshold is 55%).
+- None. The deployment path for the backend and Streamlit frontend is now documented and wired for Render/Railway and Streamlit Community Cloud.
 
 ## Known Bugs
-- None. All 186 tests pass cleanly.
+- None. The previous localhost-only frontend configuration and startup runtime issues have been addressed.
 
 ## Dependencies Added
 - `streamlit` — Frontend application framework (added to `requirements.txt`)
@@ -191,7 +191,7 @@ python -m pytest tests/
 ```
 
 ## Exact Point Where Development Stopped
-Milestone 7 Final Polish is fully completed. The test suite of 182 test cases was executed and verified to pass cleanly with a 61.70% overall code coverage.
+Production deployment hardening is now complete. The FastAPI backend and Streamlit frontend have been updated to remove localhost-only assumptions, support environment-based deployment URLs, and use a compatible Streamlit runtime.
 
 ## Instructions for the Next AI Session
 1. Deploy the microservices stack using `docker-compose up -d`.
