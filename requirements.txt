@@ -31,8 +31,8 @@ aiofiles==24.1.0
 starlette==0.37.2
 
 # ── Data Validation ───────────────────────────────────────
-pydantic==2.8.2
-pydantic-settings==2.4.0
+pydantic==2.13.4
+pydantic-settings==2.14.2
 
 # ── Database ──────────────────────────────────────────────
 SQLAlchemy==2.0.32
