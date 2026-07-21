@@ -170,7 +170,22 @@ class DeepGuardAPIClient:
             pool_maxsize: Max connections per pool
         """
         self.base_url = resolve_api_base_url(base_url)
-        self.api_key = api_key or os.getenv("DEEPGUARD_API_KEY", "")
+        
+        # Resolve API key prioritizing st.secrets then environment variables
+        resolved_key = api_key
+        if not resolved_key:
+            try:
+                import streamlit as st
+                if hasattr(st, "secrets"):
+                    resolved_key = st.secrets.get("DEEPGUARD_API_KEY")
+                    if not resolved_key and "general" in st.secrets:
+                        resolved_key = st.secrets["general"].get("DEEPGUARD_API_KEY")
+            except Exception:
+                pass
+        if not resolved_key:
+            resolved_key = os.getenv("DEEPGUARD_API_KEY", "")
+
+        self.api_key = resolved_key
         self.timeout = timeout
         self.max_retries = max_retries
         
@@ -210,8 +225,14 @@ class DeepGuardAPIClient:
         
         if self.api_key:
             self.session.headers.update({
+                "X-API-Key": self.api_key,
                 "Authorization": f"Bearer {self.api_key}"
             })
+            print("[DeepGuard App Startup] API key loaded successfully.")
+            logger.info("API key loaded successfully.")
+        else:
+            print("[DeepGuard App Startup] Warning: No API key loaded.")
+            logger.warning("No API key loaded.")
         
         logger.info(f"API Client initialized: {self.base_url}")
 
