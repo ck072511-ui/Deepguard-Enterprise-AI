@@ -48,6 +48,7 @@ cors:
     - https://*.github.dev
     - https://*.railway.app
     - https://*.render.com
+    - https://*.onrender.com
   allow_credentials: true
   allow_methods:
     - GET

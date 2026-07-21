@@ -205,7 +205,7 @@ def create_application() -> FastAPI:
         for always_allow in ("testserver", "localhost", "127.0.0.1"):
             if always_allow not in allowed_hosts:
                 allowed_hosts.append(always_allow)
-        allowed_hosts.extend(["0.0.0.0", ".railway.app", ".render.com", ".app.github.dev"])
+        allowed_hosts.extend(["0.0.0.0", ".railway.app", ".render.com", ".onrender.com", ".app.github.dev"])
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
 
     # 9. CORS

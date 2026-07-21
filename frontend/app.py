@@ -17,7 +17,7 @@ import streamlit as st
 
 logger = logging.getLogger(__name__)
 
-# Setup python path to include parent directory
+# Setup python path to include paren  t directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from frontend.client import DeepGuardAPIClient
