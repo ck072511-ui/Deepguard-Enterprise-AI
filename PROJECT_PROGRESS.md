@@ -143,22 +143,23 @@
 - `PROJECT_PROGRESS.md` — Updated progress logs
 
 ## Pending Tasks
-- None. The deployment path for the backend and Streamlit frontend is now documented and wired for Render/Railway and Streamlit Community Cloud.
+- None. The backend is fully deployed on Render, and the Streamlit frontend is connected and live on Streamlit Cloud.
 
 ## Known Bugs
-- None. The previous localhost-only frontend configuration and startup runtime issues have been addressed.
+- None. Host header validation and dependency resolution loops are fully resolved.
 
-## Dependencies Added
-- `streamlit` — Frontend application framework (added to `requirements.txt`)
-- `watchdog` — Watch filesystem events for Streamlit hot-reload (in Dockerfile)
+## Dependencies Added & Reorganized
+- **`backend/requirements.txt`**: Added core deep learning and ML packages, isolating them from the UI.
+- **`requirements.txt` (Root)**: Simplified to contain lightweight Streamlit Cloud dependencies.
+- **`packages.txt`**: Added native Linux dependency declarations (`libmagic-dev`, `libgl1-mesa-glx`) for Streamlit Cloud.
 
 ## Environment Changes
-- Added local `.env` configuration file.
+- Configured `.streamlit/secrets.toml` with the production backend API URL.
 
 ## Test Results (Latest Run)
 ```
-186 passed, 14 warnings in 39.08s (Verified on 2026-07-20)
-Total coverage: 62.98% (threshold: 55% ✅)
+189 passed, 14 warnings in 101.85s (Verified on 2026-07-21)
+Total coverage: 61.01% (threshold: 55% ✅)
 ```
 
 ## How to Run

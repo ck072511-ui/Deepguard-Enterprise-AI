@@ -74,7 +74,7 @@ CORS_ORIGINS=https://your-domain.com,https://app.your-domain.com
 1. Create a new web service for the backend using the repository root.
 2. Set the build command to:
 ```bash
-pip install -r requirements.txt
+pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cpu && pip install -r backend/requirements.txt
 ```
 3. Set the start command to:
 ```bash
@@ -83,8 +83,7 @@ uvicorn backend.main:app --host 0.0.0.0 --port $PORT
 4. Add the environment variables:
 ```bash
 APP_ENV=production
-DATABASE_URL=sqlite+aiosqlite:////app/database/deepguard.db
-PYTHON_VERSION=3.11
+DATABASE_URL=sqlite+aiosqlite:///./database/deepguard.db
 ```
 5. Confirm the health endpoint returns 200 at `/api/v1/health`.
 

@@ -1,0 +1,89 @@
+# ============================================================
+# DeepGuard — backend/requirements.txt
+# Core ML Inference & Serving Dependencies
+# ============================================================
+
+# ── Deep Learning ─────────────────────────────────────────
+torch==2.2.2; python_version < "3.14"
+torchvision==0.17.2; python_version < "3.14"
+torchaudio==2.2.2; python_version < "3.14"
+timm==1.0.9; python_version < "3.14"
+
+# ── Computer Vision & Image Processing ───────────────────
+opencv-python-headless==4.10.0.84
+Pillow==10.2.0
+albumentations==2.0.8; python_version < "3.14"
+albucore==0.0.24; python_version < "3.14"
+imageio==2.35.1; python_version < "3.14"
+scikit-image==0.24.0; python_version < "3.14"
+
+# ── Numerical Computing ───────────────────────────────────
+numpy>=1.26.4,<2.0.0
+scipy==1.14.0
+pandas==2.2.2
+
+# ── Web Framework ─────────────────────────────────────────
+fastapi==0.112.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+httpx==0.27.2
+aiofiles==24.1.0
+starlette==0.37.2
+
+# ── Data Validation ───────────────────────────────────────
+pydantic==2.13.4
+pydantic-settings==2.14.2
+
+# ── Database ──────────────────────────────────────────────
+SQLAlchemy==2.0.32
+aiosqlite==0.20.0
+alembic==1.13.2
+
+# ── Configuration Management ──────────────────────────────
+python-dotenv==1.0.1
+PyYAML==6.0.2
+omegaconf==2.3.0
+hydra-core==1.3.2
+
+# ── Logging & Monitoring ──────────────────────────────────
+loguru==0.7.2
+structlog==24.4.0
+rich==13.8.0
+prometheus-client==0.21.0
+
+# ── Security ──────────────────────────────────────────────
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+cryptography==43.0.1
+
+# ── Data Processing & Utilities ──────────────────────────
+tqdm==4.66.5
+joblib==1.4.2
+click==8.1.7
+typer==0.12.5
+psutil==6.0.0
+humanize==4.10.0
+
+# ── Serialization ─────────────────────────────────────────
+orjson==3.10.7
+msgpack==1.0.8
+
+# ── Face Detection (preprocessing) ───────────────────────
+facenet-pytorch==2.6.0; python_version < "3.14"
+
+# ── Metrics ───────────────────────────────────────────────
+scikit-learn==1.5.1; python_version < "3.14"
+torchmetrics==1.4.1; python_version < "3.14"
+
+# ── Caching ───────────────────────────────────────────────
+cachetools==5.5.0
+diskcache==5.6.3
+
+# ── HTTP Client ───────────────────────────────────────────
+requests==2.32.3
+aiohttp==3.10.5
+
+# ── File Handling ─────────────────────────────────────────
+python-magic==0.4.27; sys_platform != "win32"
+python-magic-bin==0.4.14; sys_platform == "win32"
+filetype==1.2.0
